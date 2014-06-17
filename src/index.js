@@ -1,74 +1,35 @@
 'use strict'
 
-var Transform = require('stream-objectmode').Transform;
-var ReadableArray = require('stream-arrays').ReadableArray;
+var transform = require('stream-transform');
 
 /**
- * stream-cycle
- * var cycle = require('stream-cycle');
- * @param source {stream|array} Source to cycle
- * @example
- * from array
- *   cycle([1,2,3,4]).pipe(dest);
- * remember what is piped in and cycle once ended
- *   source.pipe(cycle()).pipe(dest);
+ * stream-slice
+ * var cycle = require('stream-slice');
+ * @param [start] {number} index to start at
+ * @param stop {number} index to stop before
+ * @example slice(3) // slice to length 3
+ * @example slice(1, 2) // slice to only the second element
  */
-module.exports = function (source) {
-    /*
-    The general strategy is to
-    * ensure source is a Readable. If it was an array, convert to ReadableArray
-    * pipe the source though the Transform we return which records the history
-    * once the source has ended, we change _read to cycle the history
-    */
-    var history = [];
+module.exports = function (start, stop) {
+    if (arguments.length === 1) {
+        stop = start;
+        start = 0;
+    }
     var index = 0;
-    var endedError = new Error('There are no next items in the set to cycle');
+    return transform(function (x, done) {
+        if (index >= stop) {
+            // we're done for good, push null to end
+            return done(null, null);
+        }
 
-    if (Array.isArray(source)) {
-        source = new ReadableArray(source);
-    }
-
-    var cycle = new Transform({
-        objectMode: true,
-        highWaterMark: 1,
-        lowWaterMark: 1
-    });
-    // record what flows through cycle
-    cycle._transform = function (chunk, done) {
-        history.push(chunk);
-        done(null, chunk);
-    };
-
-    // ignore .end() commands as you are INFINITE
-    cycle.end = function (chunk) {
-        if (chunk) this.write(chunk);
-    };
-
-    cycle.on('pipe', function (source) {
-        source.on('end', function () {
-            cycle._read = function () {
-                setTimeout(function () {
-                    this.push(next());
-                }.bind(this));
-            }
-            cycle.read(0);
-        })
-    });
-
-    // Initially, pipe the source through the cycle
-    // But dont end when its done, because then we'll start
-    // replaying the history
-    if (source) {
-        source.pipe(cycle, { end: false });
-    }
-
-    // get the next thing from the history according to index
-    // this cycles because modulo
-    function next() {
-        var nextThing = history[index % history.length];
+        // we'll be continuing
         index++;
-        return nextThing;
-    }
 
-    return cycle;
+        if (index <= start) {
+            // don't start yet, just increment and move along
+            return done();
+        }
+        // in the wheelhouse, push it http://youtu.be/vCadcBR95oU
+        return done(null, x);
+    });
 };

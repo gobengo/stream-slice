@@ -1,22 +1,31 @@
-# stream-cycle
+# stream-slice
 
-![](http://media.giphy.com/media/9j1JaFT9Mbl3G/giphy.gif)
+<img style="max-width: 300px" src="http://upload.wikimedia.org/wikipedia/commons/4/4c/Eierschneider.jpg" />
 
-Create a [stream](https://github.com/Livefyre/stream)/Readable that infinitely cycles over the items in an array or another, finite Readable. A lot like Python's [itertools.cycle](https://docs.python.org/2/library/itertools.html#itertools.cycle)
+Create a [stream](https://github.com/Livefyre/stream)/Transform that slices a stream piped into it. For example, take an infinite [stream-cycle](https://github.com/gobengo/stream-cycle) and limit it to N objects.
 
-One use case for this is to produce an infinite stream from an Array of mock objects so you can test downstream Writables.
+A lot like Python's [itertools.islice](https://docs.python.org/2/library/itertools.html#itertools.islice)
 
 ## Example
 
 ```javascript
-var alternating = cycle([1,0]);
-alternating.on('data', console.log);
+var cycle = require('stream-cycle');
+var slice = require('stream-slice');
+
+var infinite = cycle([1,0]);
+var only5 = infinite.pipe(slice(100));
+only5
+  .on('end', function () {
+    console.log('ended after 5');
+  })
+  .on('data', console.log);
+
 // 1
 // 0
 // 1
 // 0
 // 1
-// 0
+// ended after 5
 ```
 
 ## `make` commands

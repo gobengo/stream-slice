@@ -4,12 +4,12 @@
     almond: 'lib/almond/almond'
   },
   baseUrl: '..',
-  name: "stream-cycle",
+  name: "stream-slice",
   include: [
     'almond'
   ],
   stubModules: ['text', 'hgn', 'json'],
-  out: "../dist/stream-cycle.min.js",
+  out: "../dist/stream-slice.min.js",
   cjsTranslate: true,
   optimize: "none",
   uglify2: {

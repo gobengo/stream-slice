@@ -1,7 +1,7 @@
 {
-  "name": "stream-cycle",
+  "name": "stream-slice",
   "version": "0.0.2",
-  "homepage": "https://github.com/Livefyre/stream-cycle",
+  "homepage": "https://github.com/Livefyre/stream-slice",
   "authors": [
     "Benjamin Goering <bengoering@gmail.com>"
   ],
